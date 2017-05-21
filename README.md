@@ -1,7 +1,7 @@
 # scala-xmlparser
 Read and write xml to and from class
 
-# Example: 
+### Example: 
 #### For xml:
 ```scala
    val xml = <size description="Extra Large">
@@ -30,7 +30,7 @@ case class ItemImage(image: String, color: String)
   val xmlSizeRead = new XmlNodeReader[ItemSize](
     nodeName = "size",
     read = n => {
-      val images = XmlParser.parse(n)(ItemImage.xmlRead)
+      val images = XmlParser.parse(n)(xmlImageRead)
       ItemSize(
         (n \ "@description").text,
         images
