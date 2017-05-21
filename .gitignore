@@ -2,6 +2,7 @@
 *.log
 logs
 target
+project/target
 /.idea
 /.idea_modules
 /.classpath
