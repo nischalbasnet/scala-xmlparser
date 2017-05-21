@@ -11,8 +11,9 @@ import scala.xml.{Node, NodeSeq}
   */
 object XmlParser
 {
+
   /**
-    * Converts Node input to type T using xml node reader class for type T
+    * Converts xml Node to Sequence of T
     *
     * @param xmlInput
     * @param reader
@@ -20,23 +21,9 @@ object XmlParser
     *
     * @return
     */
-  def parse[T](xmlInput: Node)(reader: XmlNodeReader[T]): T =
+  def parse[T](xmlInput: Node)(reader: XmlNodeReader[T]): Seq[T] =
   {
-    reader.convertTo(xmlInput)
-  }
-
-  /**
-    * Converts sequence Node input to sequence of T using xml node reader class for type T
-    *
-    * @param xmlNodes
-    * @param reader
-    * @tparam T
-    *
-    * @return
-    */
-  def parse[T](xmlNodes: NodeSeq)(reader: XmlNodeReader[T]): Seq[T] =
-  {
-    xmlNodes.map(cs => XmlParser.parse[T](cs)(reader))
+    reader.readTo(xmlInput)
   }
 
   /**
@@ -98,7 +85,15 @@ class XmlNodeReader[T](
   read: (Node => T)
 ) extends IConvertTo[Node, T]
 {
-  def convertTo(xml: Node): T = read(xml)
+  def convertTo(xml: Node): T =
+  {
+    read(xml)
+  }
+
+  def readTo(xml: Node, overrideNodeName: String = nodeName): Seq[T] =
+  {
+    (xml \\ overrideNodeName).map(convertTo)
+  }
 }
 
 /**

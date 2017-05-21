@@ -16,13 +16,11 @@ object Main extends App
   val xmlFile = this.getClass.getResource("product-test.xml")
   val xmlSource = XML.load(xmlFile.getPath)
 
-  val catalog = XmlParser.parse(xmlSource \\ "catalog")(Catalog.xmlRead)
+  val catalog = XmlParser.parse(xmlSource)(Catalog.xmlRead)
 
   catalog.foreach(println)
 
-  val images = XmlParser.parse(xmlSource \\ "size")(ItemSize.xmlRead)
+  val newImg = XmlParser.parse(xmlSource)(ItemSize.xmlRead)
 
-  val imageNodes = XmlParser.write(images)(ItemSize.xmlWriter)
-
-  println(NodeSeq.fromSeq(imageNodes))
+  newImg.foreach(println)
 }

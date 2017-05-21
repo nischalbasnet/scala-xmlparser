@@ -15,7 +15,7 @@ object Catalog
   val xmlRead = new XmlNodeReader[Catalog](
     nodeName = "catalog",
     read = n => {
-      val products = XmlParser.parse(n \\ "product")(CatalogProduct.xmlRead)
+      val products = XmlParser.parse(n)(CatalogProduct.xmlRead)
 
       Catalog(products)
     }
@@ -29,7 +29,7 @@ object CatalogProduct
   val xmlRead = new XmlNodeReader[CatalogProduct](
     nodeName = "product",
     read = n => {
-      val items = XmlParser.parse(n \\ "catalog_item")(CatalogItem.xmlRead)
+      val items = XmlParser.parse(n)(CatalogItem.xmlRead)
 
       CatalogProduct(
         (n \ "@description").text,
@@ -47,7 +47,7 @@ object CatalogItem
   val xmlRead = new XmlNodeReader[CatalogItem](
     nodeName = "catalog_item",
     read = n => {
-      val sizes = XmlParser.parse(n \\ "color_swatch")(ItemSize.xmlRead)
+      val sizes = XmlParser.parse(n)(ItemSize.xmlRead)
       val price = try {
         (n \ "price").text.toFloat
       } catch {
@@ -68,9 +68,9 @@ case class ItemSize(description: String, images: Seq[ItemImage])
 object ItemSize
 {
   val xmlRead = new XmlNodeReader[ItemSize](
-    nodeName = "color_swatch",
+    nodeName = "size",
     read = n => {
-      val images = XmlParser.parse(n \\ "color_swatch")(ItemImage.xmlRead)
+      val images = XmlParser.parse(n)(ItemImage.xmlRead)
       ItemSize(
         (n \ "@description").text,
         images
