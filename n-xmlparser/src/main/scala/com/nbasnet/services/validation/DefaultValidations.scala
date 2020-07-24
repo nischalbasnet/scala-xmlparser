@@ -1,10 +1,9 @@
-package com.nischal.services.validation
+package com.nbasnet.services.validation
 
 /**
   * Object containing set of default validations
   */
-object DefaultValidations
-{
+object DefaultValidations {
 
   /**
     * Check if the string start with the given value
@@ -12,8 +11,9 @@ object DefaultValidations
     * @param startString : value that the checked value should start with
     * @param groups      : Validation Groups current validation is related to
     */
-  case class StartsWith(startString: String, groups: Seq[String] = Seq.empty) extends IValidate[String]
-  {
+  case class StartsWith(startString: String, groups: Seq[String] = Seq.empty)
+      extends IValidate[String] {
+
     /**
       * Main method that performs validation
       *
@@ -35,13 +35,12 @@ object DefaultValidations
   }
 
   /**
-    *
     * @param min    : minimun length of string
     * @param max    : maximum length of string
     * @param groups : Validation Groups current validation is related to
     */
-  case class Length(min: Int = -1, max: Int = -1, groups: Seq[String] = Seq.empty) extends IValidate[String]
-  {
+  case class Length(min: Int = -1, max: Int = -1, groups: Seq[String] = Seq.empty)
+      extends IValidate[String] {
     //variable to hold the error
     private var error: String = ""
 
@@ -52,17 +51,16 @@ object DefaultValidations
       *
       * @return
       */
-    def validate(checkVal: String): Boolean =
-    {
+    def validate(checkVal: String): Boolean = {
       val valid = if (min != -1 && checkVal.length >= min) {
-        error = if (max != -1) s"min length of $min and max length of $max" else s"min length of $min"
+        error =
+          if (max != -1) s"min length of $min and max length of $max" else s"min length of $min"
         false
-      }
-      else if (max != -1 && checkVal.length <= max) {
-        error = if (min != -1) s"min length of $min and max length of $max" else s"max length of $min"
+      } else if (max != -1 && checkVal.length <= max) {
+        error =
+          if (min != -1) s"min length of $min and max length of $max" else s"max length of $min"
         false
-      }
-      else true
+      } else true
 
       valid
     }
@@ -79,13 +77,12 @@ object DefaultValidations
   }
 
   /**
-    *
     * @param min    : minimum value
     * @param max    : max value
     * @param groups : Validation Groups current validation is related to
     */
-  case class InBetween(min: Int = -11111, max: Int = -11111, groups: Seq[String] = Seq.empty) extends IValidate[Int]
-  {
+  case class InBetween(min: Int = -11111, max: Int = -11111, groups: Seq[String] = Seq.empty)
+      extends IValidate[Int] {
     //variable to hold the error
     private var error: String = ""
 
@@ -96,17 +93,16 @@ object DefaultValidations
       *
       * @return
       */
-    def validate(checkVal: Int): Boolean =
-    {
+    def validate(checkVal: Int): Boolean = {
       val valid = if (min != -11111 && checkVal >= min) {
-        error = if (max != -11111) s"min value of $min and max value of $max" else s"min value of $min"
+        error =
+          if (max != -11111) s"min value of $min and max value of $max" else s"min value of $min"
         false
-      }
-      else if (max != -11111 && checkVal <= max) {
-        error = if (min != -11111) s"min value of $min and max value of $max" else s"max value of $min"
+      } else if (max != -11111 && checkVal <= max) {
+        error =
+          if (min != -11111) s"min value of $min and max value of $max" else s"max value of $min"
         false
-      }
-      else true
+      } else true
 
       valid
     }

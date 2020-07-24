@@ -1,10 +1,69 @@
-name := "XmlService"
+import sbtghpackages.GitHubPackagesPlugin.autoImport.githubRepository
 
-version := "1.0"
+val libVersion = "0.0.1-SNAPSHOT"
+val libScalaVersion = "2.12.12"
 
-scalaVersion := "2.11.11"
+lazy val commonSettings = Seq(
+  organization := "com.nbasnet",
+  version := libVersion,
+  scalaVersion := libScalaVersion,
+  scalacOptions ++= Seq(
+    "-deprecation",
+    "-encoding", "UTF-8",
+    "-feature",
+    "-language:existentials",
+    "-language:higherKinds",
+    "-language:implicitConversions",
+    "-unchecked",
+    "-Xlint",
+    "-Yno-adapted-args",
+    "-Ywarn-numeric-widen",
+    "-Ywarn-value-discard",
+    "-Xfuture"
+  ),
+  scalafmtOnCompile := true,
 
-libraryDependencies ++= Seq(
-  "org.scala-lang.modules" %% "scala-xml" % "1.0.6",
-  "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4"
+  // Github package publish info
+  githubRepository := "scala-xmlparser",
+  githubOwner := sys.env("GITHUB_USERNAME"),
+  githubTokenSource := TokenSource.Environment("GITHUB_TOKEN")
 )
+
+lazy val root = (project in file("."))
+  .aggregate(`n-xmlparser`)
+  .settings(
+    publish / skip := true
+  )
+
+lazy val `n-xmlparser` = (project in file("n-xmlparser"))
+  .settings(commonSettings)
+  .settings(
+    name := "n-xmlparser",
+    libraryDependencies ++= Seq(
+      "org.scala-lang.modules" %% "scala-xml" % "1.3.0",
+      "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2",
+
+      // Test dependencies
+      "org.scalatest" %% "scalatest" % "3.2.0" % "test"
+    ),
+    publish / skip := true
+  )
+
+
+lazy val `n-xmlparser-macro` = (project in file("n-xmlparser-macro"))
+  .dependsOn(`n-xmlparser`)
+  .settings(commonSettings)
+  .settings(
+    name := "n-xmlparser-macro",
+    libraryDependencies ++= Seq(
+      "org.scala-lang" % "scala-reflect" % scalaVersion.value % Provided,
+    )
+  )
+
+lazy val `parser-test` = (project in file("parser-test"))
+  .dependsOn(`n-xmlparser`, `n-xmlparser-macro`)
+  .settings(commonSettings)
+  .settings(
+    name := "parser-test",
+    publish / skip := true
+  )
