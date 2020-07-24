@@ -1,12 +1,12 @@
-package com.nischal.services.validation
+package com.nbasnet.services.validation
 
 /**
   * trait that defines the property/behaviour of the validator classes
   *
   * @tparam T : Type for the validator classes
   */
-trait IValidate[T]
-{
+trait IValidate[T] {
+
   /**
     * Validation Groups current validation is related to
     */
@@ -39,8 +39,7 @@ trait IValidate[T]
     *
     * @return
     */
-  def and(newValidation: IValidate[T]): ValidationContainer[T] =
-  {
+  def and(newValidation: IValidate[T]): ValidationContainer[T] = {
     val combinedSequence: Seq[IValidate[T]] = Seq(this) :+ newValidation
 
     ValidationContainer(combinedSequence)
@@ -53,8 +52,8 @@ trait IValidate[T]
   * @param validations : set of validation contained in container class
   * @tparam T : Type for the validator classes
   */
-case class ValidationContainer[T](validations: Seq[IValidate[T]])
-{
+case class ValidationContainer[T](validations: Seq[IValidate[T]]) {
+
   /**
     * Add more validation to the list
     * and generate new ValidationContainer
@@ -63,16 +62,15 @@ case class ValidationContainer[T](validations: Seq[IValidate[T]])
     *
     * @return
     */
-  def and(newValidation: IValidate[T]): ValidationContainer[T] =
-  {
+  def and(newValidation: IValidate[T]): ValidationContainer[T] = {
     val combinedSequence: Seq[IValidate[T]] = validations :+ newValidation
 
     ValidationContainer(combinedSequence)
   }
 }
 
-object ValidationContainer
-{
+object ValidationContainer {
+
   /**
     * Implicit apply that gives us ability to use single validation class as ValidationContainer
     * so that we dont need to wrap that class in the container classes
@@ -82,7 +80,8 @@ object ValidationContainer
     *
     * @return
     */
-  implicit def apply[T](validation: IValidate[T]): ValidationContainer[T] = ValidationContainer(Seq(validation))
+  implicit def apply[T](validation: IValidate[T]): ValidationContainer[T] =
+    ValidationContainer(Seq(validation))
 }
 
 /**
@@ -90,13 +89,12 @@ object ValidationContainer
   *
   * @tparam T : Type for the validator classes
   */
-trait IFieldValidator[T]
-{
+trait IFieldValidator[T] {
   //Field name to be validated
   val fieldName: String
   //validations to be performed on the field
   val validations: ValidationContainer[T]
 
   //perform the validation for given/all group
-  def validate(group: Option[String] = None): Seq[String]
+  def validate(group: Option[String] = None): Vector[String]
 }
