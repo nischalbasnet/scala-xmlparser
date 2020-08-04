@@ -9,7 +9,8 @@ lazy val commonSettings = Seq(
   scalaVersion := libScalaVersion,
   scalacOptions ++= Seq(
     "-deprecation",
-    "-encoding", "UTF-8",
+    "-encoding",
+    "UTF-8",
     "-feature",
     "-language:existentials",
     "-language:higherKinds",
@@ -22,17 +23,20 @@ lazy val commonSettings = Seq(
     "-Xfuture"
   ),
   scalafmtOnCompile := true,
-
   // Github package publish info
   githubRepository := "scala-xmlparser",
-  githubOwner := sys.env("GITHUB_USERNAME"),
-  githubTokenSource := TokenSource.Environment("GITHUB_TOKEN")
+  githubOwner := "nischalbasnet",
+  githubTokenSource := TokenSource.Environment("GITHUB_TOKEN"),
+  libraryDependencies ++= Seq(
+    // Test dependencies
+    "org.scalatest" %% "scalatest" % "3.2.0" % "test"
+  )
 )
 
 lazy val root = (project in file("."))
   .aggregate(`n-xmlparser`)
   .settings(
-    publish / skip := true
+    publish := {}
   )
 
 lazy val `n-xmlparser` = (project in file("n-xmlparser"))
@@ -41,14 +45,9 @@ lazy val `n-xmlparser` = (project in file("n-xmlparser"))
     name := "n-xmlparser",
     libraryDependencies ++= Seq(
       "org.scala-lang.modules" %% "scala-xml" % "1.3.0",
-      "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2",
-
-      // Test dependencies
-      "org.scalatest" %% "scalatest" % "3.2.0" % "test"
-    ),
-    publish / skip := true
+      "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.2"
+    )
   )
-
 
 lazy val `n-xmlparser-macro` = (project in file("n-xmlparser-macro"))
   .dependsOn(`n-xmlparser`)
@@ -56,7 +55,7 @@ lazy val `n-xmlparser-macro` = (project in file("n-xmlparser-macro"))
   .settings(
     name := "n-xmlparser-macro",
     libraryDependencies ++= Seq(
-      "org.scala-lang" % "scala-reflect" % scalaVersion.value % Provided,
+      "org.scala-lang" % "scala-reflect" % scalaVersion.value % Provided
     )
   )
 
@@ -65,5 +64,5 @@ lazy val `parser-test` = (project in file("parser-test"))
   .settings(commonSettings)
   .settings(
     name := "parser-test",
-    publish / skip := true
+    publish := {}
   )

@@ -1,6 +1,6 @@
 package com.nbasnet.nxml.macroderive
 
-import com.nbasnet.nxml.XmlField
+import com.nbasnet.nxml.{XmlField, XmlSettings}
 
 object DeriveConfigs {
 
@@ -8,10 +8,8 @@ object DeriveConfigs {
 
   sealed trait XmlWriteConfig
 
-  case class FieldConfig(
-    name: String,
-    field: XmlField
-  ) extends XmlReadConfig
-      with XmlWriteConfig
+  case class XmlConfig(settings: XmlSettings) extends XmlReadConfig with XmlWriteConfig
+
+  case class FieldConfig(name: String, field: XmlField) extends XmlReadConfig with XmlWriteConfig
 
 }

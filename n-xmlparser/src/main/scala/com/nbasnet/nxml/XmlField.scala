@@ -14,14 +14,18 @@ case class XmlField(
     } yield nm.replace(s"$ns:", "")
   }.orElse(name)
 
-  val xmlPathName: String = {
+  def xmlPathName: String = {
+    //default behaviour is to remove the namespace when reading, but can be modified by using
+    //XmlSettings
     val path = nameWithoutNameSpace.getOrElse("")
-    if (isChildNodeValue) path else s"@$path"
+    if (isChildNodeValue) path
+    else if (nameSpace.isDefined) s"@{${nameSpace.get}}$path"
+    else s"@$path"
   }
 
   def overrideField(config: Option[XmlField]): XmlField = {
     XmlField(
-      name = config.map(_.name).getOrElse(this.name),
+      name = config.flatMap(_.name).orElse(this.name),
       isNodeValue = config.map(_.isNodeValue).getOrElse(this.isNodeValue),
       isChildNodeValue = config.map(_.isChildNodeValue).getOrElse(this.isChildNodeValue),
       nameSpace = config.flatMap(_.nameSpace).orElse(this.nameSpace)
@@ -30,7 +34,35 @@ case class XmlField(
 
 }
 
-case class XmlSettings(
-  nameNormalizer: String => String,
-  nameSpace: Option[String] = None
-)
+trait XmlSettings {
+
+  /**
+    * takes in name and the namespace of the field and normalizes it
+    * @return normalized name
+    */
+  def pathNormalizer: (String, Option[String]) => String
+
+  /**
+    * namespace to use if the field/object does not define its own
+    */
+  def nameSpace: Option[String]
+}
+
+object XmlSettings {
+
+  def apply(
+    namenormalizer: (String, Option[String]) => String,
+    namespace: Option[String] = None
+  ): XmlSettings =
+    new XmlSettings {
+      def pathNormalizer: (String, Option[String]) => String = namenormalizer
+      val nameSpace: Option[String] = namespace
+    }
+
+  def camelCaseToHyphen(nameSpace: Option[String] = None): XmlSettings =
+    apply(
+      namenormalizer = (name, _) => name.replaceAll("_", "-"),
+      namespace = nameSpace
+    )
+
+}
