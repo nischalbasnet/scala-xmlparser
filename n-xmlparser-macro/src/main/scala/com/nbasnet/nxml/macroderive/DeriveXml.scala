@@ -1,7 +1,12 @@
 package com.nbasnet.nxml.macroderive
 
-import com.nbasnet.nxml.macroderive.DeriveConfigs.{FieldConfig, XmlReadConfig, XmlWriteConfig}
-import com.nbasnet.nxml.{XmlReads, XmlSettings, XmlWrites}
+import com.nbasnet.nxml.macroderive.DeriveConfigs.{
+  FieldConfig,
+  XmlConfig,
+  XmlReadConfig,
+  XmlWriteConfig
+}
+import com.nbasnet.nxml.{XmlReads, XmlWrites}
 
 import scala.language.experimental.macros
 import scala.reflect.macros.blackbox
@@ -9,6 +14,7 @@ import scala.reflect.macros.blackbox
 final class ChildNodeValue() extends scala.annotation.StaticAnnotation
 final class NodeValue() extends scala.annotation.StaticAnnotation
 final class XmlFieldName(name: String) extends scala.annotation.StaticAnnotation
+final class XmlNameSpace(namespace: String) extends scala.annotation.StaticAnnotation
 
 object DeriveXml {
 
@@ -25,10 +31,10 @@ private[macroderive] class DeriveXmlMacros(override val c: blackbox.Context)
 
   sealed trait MacroXmlConfig
   case class MacroFieldConfig(name: String, field: Tree) extends MacroXmlConfig
-  case class MacroXmlSetting(nameNormalizer: Tree)
+  case class MacroXmlSettings(settings: Tree) extends MacroXmlConfig
 
   def deriveReaderImpl[T: c.WeakTypeTag](settings: Tree*): Tree = {
-//    println(deriveReaderInternal[T]())
+//    println(deriveReaderInternal[T](settings))
     deriveReaderInternal[T](settings)
   }
 
@@ -46,8 +52,10 @@ private[macroderive] class DeriveXmlMacros(override val c: blackbox.Context)
   }
 
   protected def isChildNode(field: FieldInfo): Boolean = {
-    field.annotations.map(_.tree).collectFirst {
-      case q"new $name()" if name.tpe =:= typeOf[ChildNodeValue] => true
+    scala.util.Try {
+      field.annotations.map(_.tree).collectFirst {
+        case q"new $name()" if name.tpe =:= typeOf[ChildNodeValue] => true
+      }.getOrElse(false)
     }.getOrElse(false)
   }
 
@@ -70,6 +78,8 @@ private[macroderive] class DeriveXmlMacros(override val c: blackbox.Context)
       case q"$setting.apply(${name: String}, ${field})"
           if checkSetting[FieldConfig.type](setting) =>
         MacroFieldConfig(name, field)
+      case q"$setting.apply(${settings})" if checkSetting[XmlConfig.type](setting) =>
+        MacroXmlSettings(settings)
     }
   }
 
@@ -81,13 +91,6 @@ private[macroderive] class DeriveXmlMacros(override val c: blackbox.Context)
     }
   }
 
-  protected def getXmlSettings(settings: Seq[Tree]): Seq[MacroXmlSetting] = {
-    settings.map {
-      case q"$setting.apply($expr)" if checkSetting[XmlSettings.type](setting) =>
-        MacroXmlSetting(expr)
-    }
-  }
-
   private def deriveReaderInternal[T: c.WeakTypeTag](settings: Seq[Tree]): c.universe.Tree = {
     val T = c.weakTypeOf[T]
     if (!isCaseClass(T)) c.error(c.enclosingPosition, s"not a case class: $T")
@@ -95,14 +98,16 @@ private[macroderive] class DeriveXmlMacros(override val c: blackbox.Context)
     val classFields = caseClassFieldsTypes(T)
     val xmlConfigs = getReadConfigs(settings)
     val fieldConfigs = xmlConfigs.collect { case f: MacroFieldConfig => f }
+    val xmlSettings = xmlConfigs.collectFirst { case s: MacroXmlSettings => s }
 
     val fieldReads = classFields.map { fld =>
       val configFieldOpt = fieldConfigs.find(_.name == fld.name).map(_.field)
       val annoOrFieldPropName = annotationValue[XmlFieldName](fld).getOrElse(fld.name)
+      val annoNameSpace = annotationValue[XmlNameSpace](fld)
       // format: off
 
-      val macroXmlField = q"XmlField(${Some(annoOrFieldPropName)}, ${useValueOfNode(fld)}, ${isChildNode(fld)})"
-      val macroReader = q"readFromMacro[${fld.tpe}](xml, $macroXmlField, ${configFieldOpt map c.untypecheck})"
+      val macroXmlField = q"XmlField(${Some(annoOrFieldPropName)}, ${useValueOfNode(fld)}, ${isChildNode(fld)}, $annoNameSpace)"
+      val macroReader = q"readFromMacro[${fld.tpe}](xml, $macroXmlField, ${configFieldOpt map c.untypecheck}, ${xmlSettings.map(_.settings) map c.untypecheck})"
 
       fq""" ${encodeTerm(fld.name)} <- $macroReader """
     }
@@ -129,6 +134,7 @@ private[macroderive] class DeriveXmlMacros(override val c: blackbox.Context)
     """
   }
 
+  //TODO: use settings when deriving xml
   private def deriveWriterInternal[T: c.WeakTypeTag](settings: Seq[Tree]): c.universe.Tree = {
     val T = c.weakTypeOf[T]
     if (!isCaseClass(T)) c.error(c.enclosingPosition, s"not a case class: $T")

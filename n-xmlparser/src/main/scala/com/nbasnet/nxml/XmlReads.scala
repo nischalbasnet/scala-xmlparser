@@ -21,13 +21,19 @@ object XmlReads extends DefaultXmlReads with LowPriorityXmlReads {
   def readFromMacro[T](
     xml: NodeSeq,
     field: XmlField,
-    configField: Option[XmlField]
+    configField: Option[XmlField],
+    xmlSettings: Option[XmlSettings] = None
   )(implicit reads: XmlReads[T]): Either[ParseFailed, T] = {
     val updatedField = field.overrideField(configField)
     val xmlFieldPath = updatedField.xmlPathName
 
+    val normalizedPath = xmlSettings match {
+      case Some(settings) => settings.pathNormalizer(xmlFieldPath, updatedField.nameSpace)
+      case _              => xmlFieldPath
+    }
+
     if (updatedField.isNodeValue) reads.read(xml)
-    else reads.read(xml, xmlFieldPath)
+    else reads.read(xml, normalizedPath)
   }
 }
 
@@ -44,7 +50,7 @@ trait DefaultXmlReads {
   }
 
   implicit case object stringReads extends XmlReads[String] {
-    def read(xml: NodeSeq): Either[ParseFailed, String] = Right(xml.text)
+    def read(xml: NodeSeq): Either[ParseFailed, String] = Right(xml.text.trim)
   }
 
   implicit case object boolReads extends XmlReads[Boolean] {
@@ -56,10 +62,10 @@ trait DefaultXmlReads {
     }
   }
 
-  implicit val intReads: XmlReads[Int] = XmlReads[Int](parse(_)(_.text.toInt))
-  implicit val longReads: XmlReads[Long] = XmlReads[Long](parse(_)(_.text.toLong))
-  implicit val floatReads: XmlReads[Float] = XmlReads[Float](parse(_)(_.text.toFloat))
-  implicit val doubleReads: XmlReads[Double] = XmlReads[Double](parse(_)(_.text.toDouble))
+  implicit val intReads: XmlReads[Int] = XmlReads[Int](parse(_)(_.text.trim.toInt))
+  implicit val longReads: XmlReads[Long] = XmlReads[Long](parse(_)(_.text.trim.toLong))
+  implicit val floatReads: XmlReads[Float] = XmlReads[Float](parse(_)(_.text.trim.toFloat))
+  implicit val doubleReads: XmlReads[Double] = XmlReads[Double](parse(_)(_.text.trim.toDouble))
 
 }
 
