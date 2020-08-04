@@ -1,6 +1,6 @@
 import sbtghpackages.GitHubPackagesPlugin.autoImport.githubRepository
 
-val libVersion = "0.0.1-SNAPSHOT"
+val libVersion = "0.1.0"
 val libScalaVersion = "2.12.12"
 
 lazy val commonSettings = Seq(
