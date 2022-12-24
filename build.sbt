@@ -1,12 +1,13 @@
 import sbtghpackages.GitHubPackagesPlugin.autoImport.githubRepository
 
 val libVersion = "0.1.0"
-val libScalaVersion = "2.12.12"
+val scala212Version = "2.12.14"
+val scala213Version = "2.13.6"
 
 lazy val commonSettings = Seq(
   organization := "com.nbasnet",
   version := libVersion,
-  scalaVersion := libScalaVersion,
+  scalaVersion := scala212Version,
   scalacOptions ++= Seq(
     "-deprecation",
     "-encoding",

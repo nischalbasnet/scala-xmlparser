@@ -18,13 +18,19 @@ object XmlWrites extends DefaultXmlWrites with LowPriorityWrites {
   def writeFromMacro[T](
     v: T,
     field: XmlField,
-    configField: Option[XmlField]
+    configField: Option[XmlField],
+    xmlSettings: Option[XmlSettings] = None
   )(implicit writes: XmlWrites[T]): String = {
     val updatedField = field.overrideField(configField)
     val xmlFieldPath = updatedField.xmlPathName
 
+    val normalizedPath = xmlSettings match {
+      case Some(settings) => settings.pathNormalizer(xmlFieldPath, updatedField.nameSpace)
+      case _              => xmlFieldPath
+    }
+
     if (updatedField.isNodeValue) writes.write("", v)
-    else writes.write(xmlFieldPath, v)
+    else writes.write(normalizedPath, v)
   }
 }
 

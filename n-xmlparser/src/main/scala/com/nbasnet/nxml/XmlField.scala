@@ -41,6 +41,7 @@ trait XmlSettings {
     * @return normalized name
     */
   def pathNormalizer: (String, Option[String]) => String
+  def fieldNormalizer: (String, Option[String]) => String
 
   /**
     * namespace to use if the field/object does not define its own
@@ -51,17 +52,20 @@ trait XmlSettings {
 object XmlSettings {
 
   def apply(
-    namenormalizer: (String, Option[String]) => String,
+    pathNameNormalizer: (String, Option[String]) => String,
+    fieldNameNormalizer: (String, Option[String]) => String,
     namespace: Option[String] = None
   ): XmlSettings =
     new XmlSettings {
-      def pathNormalizer: (String, Option[String]) => String = namenormalizer
+      val pathNormalizer: (String, Option[String]) => String = pathNameNormalizer
+      val fieldNormalizer: (String, Option[String]) => String = fieldNameNormalizer
       val nameSpace: Option[String] = namespace
     }
 
   def camelCaseToHyphen(nameSpace: Option[String] = None): XmlSettings =
     apply(
-      namenormalizer = (name, _) => name.replaceAll("_", "-"),
+      pathNameNormalizer = (name, _) => name.replaceAll("_", "-"),
+      fieldNameNormalizer = (name, _) => name.replaceAll("-", "_"),
       namespace = nameSpace
     )
 
